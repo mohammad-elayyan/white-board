@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import WhiteBoard from "../../components/Whiteboard/Index";
+import "./index.css";
 
 const RoomPage = ({ roomId }) => {
   const canvasRef = useRef(null);
@@ -7,6 +8,11 @@ const RoomPage = ({ roomId }) => {
   const [tool, setTool] = useState("pencil");
   const [color, setColor] = useState("black");
   const [elements, setElements] = useState([]);
+
+  const handleClearCanvas = (e) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+  };
   return (
     <div className="row">
       <h1 className="text-center py-3">
@@ -73,7 +79,9 @@ const RoomPage = ({ roomId }) => {
           <button className="btn btn-btn-outline-primary">redo</button>
         </div>
         <div className="col-md-2 ">
-          <button className="btn btn-danger">Clear Board</button>
+          <button className="btn btn-danger" onClick={handleClearCanvas}>
+            Clear Board
+          </button>
         </div>
       </div>
       <div className="col-md-10 mx-auto mt-4 canvas-box">
@@ -83,6 +91,7 @@ const RoomPage = ({ roomId }) => {
           elements={elements}
           setElements={setElements}
           tool={tool}
+          color={color}
         />
       </div>
     </div>
