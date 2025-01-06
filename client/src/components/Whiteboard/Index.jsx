@@ -11,7 +11,18 @@ const WhiteBoard = ({
   setElements,
   tool,
   color,
+  setUndoElements,
+  user,
+  socket,
 }) => {
+  if (!user?.presenter) {
+    return (
+      <div className="border border-2 border-dark h-100 w-100 overflow-hidden">
+        <img src="" alt="" className="w-100 h-100" />
+      </div>
+    );
+  }
+
   const [isDrawing, setIsDrawing] = useState(false);
 
   useEffect(() => {
@@ -33,8 +44,8 @@ const WhiteBoard = ({
 
   useLayoutEffect(() => {
     const roughCanvas = rough.canvas(canvasRef.current);
-    if (elements.length > 0) {
-      ctxRef.current.clearRect(
+    if (elements.length >= 0) {
+      ctxRef?.current?.clearRect(
         0,
         0,
         canvasRef.current.width,
@@ -72,6 +83,7 @@ const WhiteBoard = ({
         });
       }
       const canvasImage = canvasRef.current.toDataURL();
+      socket.emit("whiteboardData", canvasImage);
     });
   }, [elements]);
 
@@ -160,7 +172,9 @@ const WhiteBoard = ({
   };
   const handleMouseUp = (e) => {
     setIsDrawing(false);
+    setUndoElements(elements);
   };
+
   return (
     <div
       onMouseDown={handleMouseDown}

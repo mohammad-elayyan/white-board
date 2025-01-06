@@ -1,6 +1,26 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const JoinRoomForm = () => {
+const JoinRoomForm = ({ uuid, socket, setUser }) => {
+  const [roomId, setRoomId] = React.useState("");
+  const [name, setName] = React.useState("");
+
+  const navigate = useNavigate();
+
+  const handleRoomJoin = (e) => {
+    e.preventDefault();
+    const roomData = {
+      name,
+      roomId,
+      userId: uuid(),
+      host: false,
+      presenter: false,
+    };
+    setUser(roomData);
+    navigate(`/${roomId}`);
+    socket.emit("userJoined", roomData);
+  };
+
   return (
     <form className="col-md-12 form mt-5">
       <div className="form-group my-2">
@@ -8,37 +28,25 @@ const JoinRoomForm = () => {
           type="text"
           className="form-control"
           placeholder="Enter your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
       </div>
-      <div className="form-group my-2 d-flex align-items-center border">
+      <div className="form-group my-2">
         <input
           type="text"
-          className="form-control border-0"
+          className="form-control"
           placeholder="Generate room code"
-          disabled
+          value={roomId}
+          onChange={(e) => setRoomId(e.target.value)}
         />
-        <div className="input-group-append d-flex gap-1">
-          <button
-            className="btn btn-primary btn-sm"
-            type="button"
-            title="generate code"
-          >
-            <i class="bi bi-plus-circle"></i>
-          </button>
-          <button
-            className="btn btn-secondary btn-sm me-1"
-            type="button"
-            title="copy code"
-          >
-            <i class="bi bi-copy"></i>
-          </button>
-        </div>
       </div>
       <button
         type="submit"
         className="mt-3 btn btn-primary d-block form-control"
+        onClick={handleRoomJoin}
       >
-        Generate Room
+        Join Room
       </button>
     </form>
   );
