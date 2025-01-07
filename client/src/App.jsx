@@ -1,33 +1,34 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Forms from "./components/Forms/Index";
-import { Route, Routes } from "react-router-dom";
+import { data, Route, Routes } from "react-router-dom";
 import RoomPage from "./pages/RoomPage/Index";
 import io from "socket.io-client";
 
 const server = "http://localhost:5000/";
 const connectionOptions = {
-  "dorce new connection": true,
+  "force new connection": true,
   reconnectionAttempts: "Infinity",
   timeout: 10000,
   transports: ["websocket"],
-  // reconnectInterval: 4000,
-  // maxReconnectAttempts: 100,
-  // debug: true,
-  // autoConnect: true,
 };
 const socket = io(server, connectionOptions);
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [users, setUsers] = useState(null);
 
   useEffect(() => {
     socket.on("userIsJoined", (data) => {
       if (data.success) {
         console.log("userJoined");
+        setUsers(data.users);
       } else {
         console.log("userJoined error");
       }
+    });
+    socket.on("allUsers", (data) => {
+      setUsers(data);
     });
   }, []);
 
@@ -59,7 +60,7 @@ const App = () => {
         />
         <Route
           path="/:roomId"
-          element={<RoomPage user={user} socket={socket} />}
+          element={<RoomPage user={user} socket={socket} users={users} />}
         />
       </Routes>
     </div>

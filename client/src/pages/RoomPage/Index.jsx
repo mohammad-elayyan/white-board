@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import WhiteBoard from "../../components/Whiteboard/Index";
 import "./index.css";
 
-const RoomPage = ({ roomId, user, socket }) => {
+const RoomPage = ({ user, socket, users }) => {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const [tool, setTool] = useState("pencil");
@@ -10,15 +10,18 @@ const RoomPage = ({ roomId, user, socket }) => {
   const [elements, setElements] = useState([]);
   const [undoElements, setUndoElements] = useState(elements);
   const [redoElements, setRedoElements] = useState([]);
+  const [openedUserTap, setOpenedUserTap] = useState(false);
 
   const handleClearCanvas = (e) => {
-    const currentElements = [...elements];
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     ctx.fillRect = "white";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setUndoElements([...undoElements, { type: "clear" }]);
-    setElements([]);
+    setElements([""]);
+    setTimeout(() => {
+      setElements([]);
+    }, 100);
     setRedoElements([]);
   };
 
@@ -54,9 +57,36 @@ const RoomPage = ({ roomId, user, socket }) => {
 
   return (
     <div className="row">
+      <button
+        className="btn btn-dark position-absolute"
+        style={{ width: "100px", height: "40px", top: "5%", left: "2.5%" }}
+        onClick={() => setOpenedUserTap(!openedUserTap)}
+      >
+        Users
+      </button>
+      {openedUserTap && (
+        <div className="col-md-4 position-fixed top-0 start-0 h-100 text-white bg-dark w-25 overflow-y-auto">
+          <button
+            className="btn btn-light w-100 my-4"
+            onClick={() => setOpenedUserTap(!openedUserTap)}
+          >
+            close
+          </button>
+
+          {users?.map((u, index) => (
+            <p key={index}>
+              <i
+                className="bi bi-circle-fill text-success me-2"
+                style={{ fontSize: ".5rem" }}
+              ></i>
+              {u.name} {user.userId === u.userId && "(You)"}
+            </p>
+          ))}
+        </div>
+      )}
       <h1 className="text-center py-3">
         White Board Sharing App{" "}
-        <span className="text-primary">[Online Users : 0]</span>
+        <span className="text-primary">[Online Users : {users?.length}]</span>
       </h1>
       {user?.presenter && (
         <div className="col-md-10 gap-3 mx-auto my-2 py-1 d-flex justify-content-center align-items-center">

@@ -15,15 +15,27 @@ const WhiteBoard = ({
   user,
   socket,
 }) => {
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [img, setImg] = useState(null);
+
+  useEffect(() => {
+    console.log(user);
+
+    socket.on("whiteboardDataResponse", (data) => {
+      setImg(data.imgUrl);
+    });
+  }, []);
   if (!user?.presenter) {
     return (
       <div className="border border-2 border-dark h-100 w-100 overflow-hidden">
-        <img src="" alt="" className="w-100 h-100" />
+        <img
+          src={img}
+          alt="canvas"
+          style={{ width: "285%", height: window.innerHeight * 2 }}
+        />
       </div>
     );
   }
-
-  const [isDrawing, setIsDrawing] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
