@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import WhiteBoard from "../../components/Whiteboard/Index";
 import "./index.css";
 
@@ -11,6 +11,13 @@ const RoomPage = ({ user, socket, users }) => {
   const [undoElements, setUndoElements] = useState(elements);
   const [redoElements, setRedoElements] = useState([]);
   const [openedUserTap, setOpenedUserTap] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      socket.emit("userLeft", user?.name);
+      console.log(users);
+    };
+  }, []);
 
   const handleClearCanvas = (e) => {
     const canvas = canvasRef.current;

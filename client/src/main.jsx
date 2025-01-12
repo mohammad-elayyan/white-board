@@ -6,11 +6,12 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter as Router } from "react-router-dom";
+import { UserProvider } from "./context/user.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <Router>
+  <Router>
+    <UserProvider>
       <App />
-    </Router>
-  </StrictMode>
+    </UserProvider>
+  </Router>
 );
