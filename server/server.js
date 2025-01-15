@@ -8,19 +8,21 @@ const { addUser, getUser, removeUser } = require("./utils/users");
 
 const io = new Server(server);
 
+// In-memory storage for room data
+const roomData = {};
+
 // routes
 app.get("/", (req, res) => {
-  res.send("Hello Wrld!");
-  //   res.sendFile(__dirname + "/index.html");
+  res.send("Hello World!");
+  // res.sendFile(__dirname + "/index.html");
 });
-
-let roomIdGlobal, imgUrlGlobal;
 
 io.on("connection", (socket) => {
   socket.on("userJoined", (data) => {
     const { name, userId, roomId, host, presenter } = data;
-    roomIdGlobal = roomId;
+
     socket.join(roomId);
+
     const users = addUser({
       name,
       userId,
@@ -29,33 +31,60 @@ io.on("connection", (socket) => {
       presenter,
       socketId: socket.id,
     });
+
+    // Initialize room data if not already present
+    if (!roomData[roomId]) {
+      roomData[roomId] = { imgUrl: "" };
+    }
+
+    // Emit user join events and current whiteboard data
     socket.emit("userIsJoined", { success: true, users });
     socket.broadcast.to(roomId).emit("userJoinedMessageBroadcasted", name);
     socket.broadcast.to(roomId).emit("allUsers", users);
-    socket.broadcast
-      .to(roomId)
-      .emit("whiteboardDataResponse", { imgUrl: imgUrlGlobal });
+    socket.emit("whiteboardDataResponse", { imgUrl: roomData[roomId].imgUrl });
   });
 
   socket.on("whiteboardData", (data) => {
     console.log("on whiteboardData");
 
-    imgUrlGlobal = data;
-    socket.broadcast.to(roomIdGlobal).emit("whiteboardDataResponse", {
-      imgUrl: data,
-    });
+    const user = getUser(socket.id);
+    if (user) {
+      roomData[user.roomId].imgUrl = data;
+      socket.broadcast.to(user.roomId).emit("whiteboardDataResponse", {
+        imgUrl: data,
+      });
+    }
   });
+  socket.on("message", (data) => {
+    const { message, id } = data; // Include unique ID from client
+    const user = getUser(socket.id);
+
+    if (user) {
+      // Broadcast the message to all users in the room except the sender
+      socket.broadcast.to(user.roomId).emit("messageResponse", {
+        id, // Pass the unique ID
+        message,
+        name: user.name,
+      });
+    }
+  });
+
   socket.on("disconnect", () => {
     const user = getUser(socket.id);
     if (user) {
       removeUser(socket.id);
       socket.broadcast
-        .to(roomIdGlobal)
+        .to(user.roomId)
         .emit("userLeftMessageBroadcasted", user.name);
+
+      // Optionally, clean up room data if no users are left
+      if (!io.sockets.adapter.rooms.get(user.roomId)) {
+        delete roomData[user.roomId];
+      }
     }
   });
 });
 
 server.listen(port, () =>
-  console.log("server is running on http://localhost:5000")
+  console.log(`Server is running on http://localhost:${port}`)
 );

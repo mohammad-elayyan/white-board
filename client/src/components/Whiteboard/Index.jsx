@@ -1,6 +1,7 @@
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { UserContext } from "../../context/user";
 
 const roughGenerator = rough.generator();
 
@@ -12,17 +13,18 @@ const WhiteBoard = ({
   tool,
   color,
   setUndoElements,
+  setRedoElements,
   user,
   socket,
 }) => {
   const [isDrawing, setIsDrawing] = useState(false);
-  const [img, setImg] = useState(null);
+  const { img, setImg } = useContext(UserContext);
 
   useEffect(() => {
     console.log(user);
 
     socket.on("whiteboardDataResponse", (data) => {
-      setImg(data.imgUrl);
+      setImg(data?.imgUrl);
     });
   }, []);
   if (!user?.presenter) {
@@ -94,9 +96,9 @@ const WhiteBoard = ({
           strokeWidth: 5,
         });
       }
-      const canvasImage = canvasRef.current.toDataURL();
-      socket.emit("whiteboardData", canvasImage);
     });
+    const canvasImage = canvasRef.current.toDataURL();
+    socket.emit("whiteboardData", canvasImage);
   }, [elements]);
 
   const handleMouseDown = (e) => {

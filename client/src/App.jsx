@@ -24,14 +24,13 @@ const App = () => {
       if (data.success) {
         console.log("userJoined");
         setUsers(data.users);
-        setUserCont(data.users);
+        console.log(data.users);
       } else {
         console.log("userJoined error");
       }
     });
     socket.on("allUsers", (data) => {
       setUsers(data);
-      setUserCont(data);
     });
 
     socket.on("userJoinedMessageBroadcasted", (data) => {

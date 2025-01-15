@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import WhiteBoard from "../../components/Whiteboard/Index";
 import "./index.css";
+import Index from "../../components/chat/Index";
 
 const RoomPage = ({ user, socket, users }) => {
   const canvasRef = useRef(null);
@@ -11,6 +12,7 @@ const RoomPage = ({ user, socket, users }) => {
   const [undoElements, setUndoElements] = useState(elements);
   const [redoElements, setRedoElements] = useState([]);
   const [openedUserTap, setOpenedUserTap] = useState(false);
+  const [openedChatTap, setOpenedChatTap] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -42,12 +44,18 @@ const RoomPage = ({ user, socket, users }) => {
       setUndoElements(newElements);
       setRedoElements(delElements);
       setElements(newElements);
+      // setTimeout(() => {
+      //   const canvasImage = canvasRef.current.toDataURL();
+      //   socket.emit("whiteboardData", canvasImage);
+      // }, 100);
     }
   };
 
   const handleRedo = () => {
     const newElements = [...elements];
     const delElements = redoElements;
+    console.log(newElements);
+
     redoElements.map((ele, indx) => {
       if (indx === delElements.length - 1 && ele.type !== "clear") {
         delElements.pop();
@@ -55,7 +63,11 @@ const RoomPage = ({ user, socket, users }) => {
         setElements(newElements);
         setUndoElements(newElements);
         setRedoElements(delElements);
-      } else {
+        // setTimeout(() => {
+        //   const canvasImage = canvasRef.current.toDataURL();
+        //   socket.emit("whiteboardData", canvasImage);
+        // }, 100);
+      } else if (indx === delElements.length - 1 && ele.type === "clear") {
         setRedoElements([]);
         handleClearCanvas();
       }
@@ -70,6 +82,13 @@ const RoomPage = ({ user, socket, users }) => {
         onClick={() => setOpenedUserTap(!openedUserTap)}
       >
         Users
+      </button>
+      <button
+        className="btn btn-dark position-absolute"
+        style={{ width: "100px", height: "40px", top: "5%", left: "8%" }}
+        onClick={() => setOpenedChatTap(!openedChatTap)}
+      >
+        Chat
       </button>
       {openedUserTap && (
         <div className="col-md-4 position-fixed top-0 start-0 h-100 text-white bg-dark w-25 overflow-y-auto">
@@ -90,6 +109,9 @@ const RoomPage = ({ user, socket, users }) => {
             </p>
           ))}
         </div>
+      )}
+      {openedChatTap && (
+        <Index setOpenedChatTap={setOpenedChatTap} socket={socket} />
       )}
       <h1 className="text-center py-3">
         White Board Sharing App{" "}
@@ -183,6 +205,7 @@ const RoomPage = ({ user, socket, users }) => {
           tool={tool}
           color={color}
           setUndoElements={setUndoElements}
+          setRedoElements={setRedoElements}
           user={user}
           socket={socket}
         />
